@@ -13,10 +13,10 @@
 //     "h264parse ! rtph264pay name=pay0 pt=96";
 
 static const char *PIPELINE =
-    "libcamerasrc ! video/x-raw,width=1280,height=720,format=NV12 ! "
+    "libcamerasrc ! video/x-raw,width=1280,height=720,format=NV12,framerate=30/1 ! "
     "videocrop name=ptzcrop ! "
-    "videoscale ! video/x-raw,width=640,height=360 ! "
-    "videoconvert ! x264enc tune=zerolatency bitrate=2000 speed-preset=ultrafast ! "
+    "videoscale ! video/x-raw,width=640,height=360,pixel-aspect-ratio=1/1 ! "
+    "v4l2h264enc ! "
     "h264parse ! rtph264pay name=pay0 pt=96";
 
 static std::string get_local_ip()
