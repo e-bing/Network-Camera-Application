@@ -7,8 +7,15 @@
 #include <arpa/inet.h>
 #include <netinet/in.h>
 
+// static const char *PIPELINE =
+//     "libcamerasrc ! video/x-raw,width=1280,height=720,format=NV12 ! "
+//     "videoconvert ! x264enc tune=zerolatency bitrate=2000 speed-preset=ultrafast ! "
+//     "h264parse ! rtph264pay name=pay0 pt=96";
+
 static const char *PIPELINE =
     "libcamerasrc ! video/x-raw,width=1280,height=720,format=NV12 ! "
+    "videocrop name=ptzcrop ! "
+    "videoscale ! video/x-raw,width=640,height=360 ! "
     "videoconvert ! x264enc tune=zerolatency bitrate=2000 speed-preset=ultrafast ! "
     "h264parse ! rtph264pay name=pay0 pt=96";
 
