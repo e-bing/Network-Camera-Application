@@ -11,3 +11,11 @@ add_executable(network-camera src/main.cpp)
 target_include_directories(network-camera PRIVATE ${GST_INCLUDE_DIRS})
 target_link_libraries(network-camera PRIVATE ${GST_LIBRARIES})
 target_compile_options(network-camera PRIVATE ${GST_CFLAGS_OTHER})
+
+add_library(eptz_crop STATIC src/pipeline/EptzCrop.cpp)
+target_include_directories(eptz_crop PUBLIC src/pipeline)
+
+enable_testing()
+add_executable(test_eptz_crop src/tests/test_eptz_crop.cpp)
+target_link_libraries(test_eptz_crop PRIVATE eptz_crop)
+add_test(NAME eptz_crop COMMAND test_eptz_crop)
