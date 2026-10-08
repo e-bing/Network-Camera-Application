@@ -1,7 +1,5 @@
 #include "EptzController.hpp"
 
-#include "EptzCrop.hpp"
-
 #include <gst/gst.h>
 
 #include <cmath>
@@ -67,6 +65,7 @@ void EptzController::attach(GstElement *crop)
         return;
 
     crop_ = GST_ELEMENT(gst_object_ref(crop));
+    applied_ = {};
 
     applyLocked();
 }
@@ -79,6 +78,7 @@ void EptzController::detach()
     {
         gst_object_unref(crop_);
         crop_ = nullptr;
+        applied_ = {};
     }
 }
 
@@ -89,11 +89,35 @@ void EptzController::applyLocked()
 
     const CropRect rect = calculate_crop(width_, height_, state_);
 
-    g_object_set(
-        crop_,
-        "left", rect.left,
-        "right", rect.right,
-        "top", rect.top,
-        "bottom", rect.bottom,
-        nullptr);
+    const bool left_first =
+        (rect.left + applied_.right) <=
+        (applied_.left + rect.right);
+
+    if (left_first)
+    {
+        g_object_set(crop_, "left", rect.left, nullptr);
+        g_object_set(crop_, "right", rect.right, nullptr);
+    }
+    else
+    {
+        g_object_set(crop_, "right", rect.right, nullptr);
+        g_object_set(crop_, "left", rect.left, nullptr);
+    }
+
+    const bool top_first =
+        (rect.top + applied_.bottom) <=
+        (applied_.top + rect.bottom);
+
+    if (top_first)
+    {
+        g_object_set(crop_, "top", rect.top, nullptr);
+        g_object_set(crop_, "bottom", rect.bottom, nullptr);
+    }
+    else
+    {
+        g_object_set(crop_, "bottom", rect.bottom, nullptr);
+        g_object_set(crop_, "top", rect.top, nullptr);
+    }
+
+    applied_ = rect;
 }

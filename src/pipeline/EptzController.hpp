@@ -1,6 +1,7 @@
 #pragma once
 
 #include "IEptzController.hpp"
+#include "EptzCrop.hpp"
 
 #include <mutex>
 
@@ -31,4 +32,5 @@ private:
     mutable std::mutex mutex_;
     PtzState state_;
     GstElement *crop_ = nullptr;
+    CropRect applied_{};
 };
