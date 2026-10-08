@@ -55,12 +55,10 @@ void EptzController::attach(GstElement *crop)
 {
     std::lock_guard<std::mutex> lock(mutex_);
 
-    if (crop_ != nullptr)
-    {
-        gst_object_unref(crop_);
-        crop_ = nullptr;
-    }
-
+    GstElement *old = crop_;
+    crop_ = (crop != nullptr) ? GST_ELEMENT(gst_object_ref(crop)) : nullptr;
+    if (old != nullptr)
+        gst_object_unref(old);
     if (crop == nullptr)
         return;
 
