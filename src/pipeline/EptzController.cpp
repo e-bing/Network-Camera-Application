@@ -63,7 +63,10 @@ void EptzController::attach(GstElement *crop)
         return;
 
     crop_ = GST_ELEMENT(gst_object_ref(crop));
-    applied_ = {};
+    g_object_get(crop_,
+                 "left", &applied_.left, "right", &applied_.right,
+                 "top", &applied_.top, "bottom", &applied_.bottom,
+                 nullptr);
 
     applyLocked();
 }
@@ -76,7 +79,6 @@ void EptzController::detach()
     {
         gst_object_unref(crop_);
         crop_ = nullptr;
-        applied_ = {};
     }
 }
 
