@@ -7,14 +7,6 @@
 struct _GstElement;
 using GstElement = struct _GstElement;
 
-struct CropRect
-{
-    int left;
-    int right;
-    int top;
-    int bottom;
-};
-
 class EptzController final : public IEptzController
 {
 public:
