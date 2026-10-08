@@ -1,13 +1,19 @@
 #include "EptzController.hpp"
 
 #include <gst/gst.h>
-
+#include <stdexcept>
 #include <cmath>
 
 EptzController::EptzController(int width, int height)
     : width_(width),
       height_(height)
 {
+    if (width <= 0 || height <= 0 ||
+        width % 2 != 0 || height % 2 != 0)
+    {
+        throw std::invalid_argument(
+            "EptzController dimensions must be positive and even");
+    }
 }
 
 EptzController::~EptzController()
