@@ -68,7 +68,6 @@ void EptzController::attach(GstElement *crop)
     if (crop == nullptr)
         return;
 
-    crop_ = GST_ELEMENT(gst_object_ref(crop));
     g_object_get(crop_,
                  "left", &applied_.left, "right", &applied_.right,
                  "top", &applied_.top, "bottom", &applied_.bottom,
