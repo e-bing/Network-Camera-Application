@@ -76,15 +76,15 @@ void EptzController::attach(GstElement *crop)
     applyLocked();
 }
 
-void EptzController::detach()
+void EptzController::detach(GstElement *crop)
 {
     std::lock_guard<std::mutex> lock(mutex_);
 
-    if (crop_ != nullptr)
-    {
-        gst_object_unref(crop_);
-        crop_ = nullptr;
-    }
+    if (crop_ == nullptr || crop_ != crop)
+        return;
+
+    gst_object_unref(crop_);
+    crop_ = nullptr;
 }
 
 void EptzController::applyLocked()

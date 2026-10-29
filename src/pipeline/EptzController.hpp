@@ -21,7 +21,7 @@ public:
     PtzState getPtz() const override;
 
     void attach(GstElement *crop);
-    void detach();
+    void detach(GstElement *crop);
 
 private:
     void applyLocked();
