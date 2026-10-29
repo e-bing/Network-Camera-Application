@@ -1,23 +1,13 @@
+#include "pipeline/EptzController.hpp"
+#include "rtsp/RtspServer.hpp"
+
 #include <gst/gst.h>
-#include <gst/rtsp-server/rtsp-server.h>
 #include <cstdio>
 #include <string>
 #include <cstring>
 #include <ifaddrs.h>
 #include <arpa/inet.h>
 #include <netinet/in.h>
-
-// static const char *PIPELINE =
-//     "libcamerasrc ! video/x-raw,width=1280,height=720,format=NV12 ! "
-//     "videoconvert ! x264enc tune=zerolatency bitrate=2000 speed-preset=ultrafast ! "
-//     "h264parse ! rtph264pay name=pay0 pt=96";
-
-static const char *PIPELINE =
-    "libcamerasrc ! video/x-raw,width=1280,height=720,format=NV12,framerate=30/1 ! "
-    "videocrop name=ptzcrop ! "
-    "videoscale ! video/x-raw,width=640,height=360,pixel-aspect-ratio=1/1 ! "
-    "v4l2h264enc ! "
-    "h264parse ! rtph264pay name=pay0 pt=96";
 
 static std::string get_local_ip()
 {
@@ -62,20 +52,15 @@ int main(int argc, char *argv[])
     gst_init(&argc, &argv);
 
     GMainLoop *loop = g_main_loop_new(nullptr, FALSE);
-    GstRTSPServer *server = gst_rtsp_server_new();
-    gst_rtsp_server_set_service(server, "8554");
+    EptzController eptz(1280, 720);
+    RtspServer rtsp(eptz, "8554");
+    if (!rtsp.start())
+    {
+        std::fprintf(stderr, "Failed to start RTSP server\n");
+        return 1;
+    }
+
     const std::string ip = get_local_ip();
-
-    GstRTSPMountPoints *mounts = gst_rtsp_server_get_mount_points(server);
-    GstRTSPMediaFactory *factory = gst_rtsp_media_factory_new();
-
-    gst_rtsp_media_factory_set_launch(factory, PIPELINE);
-    gst_rtsp_media_factory_set_shared(factory, TRUE); // 멀티클라이언트 공유
-
-    gst_rtsp_mount_points_add_factory(mounts, "/stream", factory);
-    g_object_unref(mounts);
-
-    gst_rtsp_server_attach(server, nullptr);
 
     if (ip.empty())
     {
@@ -88,7 +73,9 @@ int main(int argc, char *argv[])
             "RTSP server ready: rtsp://%s:8554/stream\n",
             ip.c_str());
     }
+
     g_main_loop_run(loop);
 
+    g_main_loop_unref(loop);
     return 0;
 }
