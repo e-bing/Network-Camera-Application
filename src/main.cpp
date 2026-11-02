@@ -52,10 +52,10 @@ static gboolean on_ptz_timer(gpointer user_data)
 {
     auto *eptz = static_cast<EptzController *>(user_data);
     static const PtzState steps[] = {
-        {0.0, 0.0, 1.0},   // 전체
-        {0.0, 0.0, 2.0},   // 중앙 2배
-        {-1.0, -1.0, 2.0}, // 좌상단
-        {1.0, 1.0, 2.0},   // 우하단
+        {0.0, 0.0, 1.0},        // 전체
+        {0.0, 0.0, kZoomMax},   // 중앙 1.9배
+        {-1.0, -1.0, kZoomMax}, // 좌상단
+        {1.0, 1.0, kZoomMax},   // 우하단
     };
     static size_t i = 0;
     const PtzState &s = steps[i++ % 4];

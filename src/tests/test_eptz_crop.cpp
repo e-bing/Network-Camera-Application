@@ -142,11 +142,43 @@ namespace
         }
     }
 
+    // ---- 운영 범위 제약 -------------------------------------------------
+
+    // 실제 파이프라인(1280x720 캡처 -> 640x360 출력)에서 허용 zoom 범위 안의
+    // crop 창은 출력보다 양쪽 모두 커야 한다.
+    // 같아지면 videoscale이 스트리밍 중 passthrough로 바뀌어
+    // v4l2h264enc가 멈추고(IEptzController.hpp 참고), 작아지면 업스케일이 된다.
+    // 창 크기가 pan/tilt와 무관하다는 건 check_invariants가 보장하므로
+    // 여기서는 pan=tilt=0만 확인한다.
+    void test_operating_range_stays_above_output()
+    {
+        constexpr int kCapW = 1280;
+        constexpr int kCapH = 720;
+        constexpr int kOutW = 640; // RtspServer.cpp PIPELINE의 출력 caps와 일치해야 함
+        constexpr int kOutH = 360;
+        constexpr int kSteps = 1000;
+
+        for (int i = 0; i <= kSteps; ++i)
+        {
+            // 마지막 스텝은 부동소수 오차 없이 정확히 kZoomMax
+            const double zoom = (i == kSteps)
+                                    ? kZoomMax
+                                    : kZoomMin + (kZoomMax - kZoomMin) * i / kSteps;
+
+            const PtzState p{0.0, 0.0, zoom};
+            const CropRect r = calculate_crop(kCapW, kCapH, p);
+            const int win_w = kCapW - r.left - r.right;
+            const int win_h = kCapH - r.top - r.bottom;
+
+            CHECK_AT(win_w > kOutW && win_h > kOutH, kCapW, kCapH, p, r);
+        }
+    }
 } // namespace
 
 int main()
 {
     test_fixed_cases();
+    test_operating_range_stays_above_output();
 
     sweep_resolution(1280, 720); // 현재 캡처 해상도
     sweep_resolution(640, 360);

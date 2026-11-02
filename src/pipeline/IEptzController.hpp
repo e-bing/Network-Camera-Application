@@ -2,16 +2,18 @@
 
 // Valid range is inclusive.
 // - pan/tilt: [-1.0, 1.0]
-// - zoom: [1.0, 2.0]
+// - zoom: [1.0, 1.9]
 // NaN and infinity are rejected as InvalidArgument.
 
-// 2.0x is the maximum zoom without upscaling:
-// 1280x720 capture -> minimum 640x360 crop -> 640x360 output.
+// Max zoom is 1.9x, not 2.0x:
+// a 640x360 crop equals the output size,
+// which switches videoscale to passthrough mid-stream
+// and stalls the pipeline with v4l2h264enc (GStreamer 1.18.4).
 inline constexpr double kPanTiltMin = -1.0;
 inline constexpr double kPanTiltMax = 1.0;
 
 inline constexpr double kZoomMin = 1.0;
-inline constexpr double kZoomMax = 2.0;
+inline constexpr double kZoomMax = 1.9;
 
 enum class PtzResult
 {
