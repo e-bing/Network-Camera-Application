@@ -47,6 +47,24 @@ static std::string get_local_ip()
     return ip;
 }
 
+// ePTZ 동작 확인용, HTTP API 붙이면 삭제 예정
+static gboolean on_ptz_timer(gpointer user_data)
+{
+    auto *eptz = static_cast<EptzController *>(user_data);
+    static const PtzState steps[] = {
+        {0.0, 0.0, 1.0},   // 전체
+        {0.0, 0.0, 2.0},   // 중앙 2배
+        {-1.0, -1.0, 2.0}, // 좌상단
+        {1.0, 1.0, 2.0},   // 우하단
+    };
+    static size_t i = 0;
+    const PtzState &s = steps[i++ % 4];
+    g_print("[ePTZ] timer pan=%.1f tilt=%.1f zoom=%.1f -> %s\n",
+            s.pan, s.tilt, s.zoom,
+            eptz->setPtz(s) == PtzResult::Ok ? "Ok" : "Invalid");
+    return G_SOURCE_CONTINUE;
+}
+
 int main(int argc, char *argv[])
 {
     gst_init(&argc, &argv);
@@ -74,6 +92,7 @@ int main(int argc, char *argv[])
             ip.c_str());
     }
 
+    g_timeout_add_seconds(5, on_ptz_timer, &eptz);
     g_main_loop_run(loop);
 
     g_main_loop_unref(loop);
