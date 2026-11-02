@@ -61,9 +61,14 @@ compile_commands.json
 # vcpkg
 vcpkg_installed/
 
-# debug information files
+# Debug information files
 *.dwo
 
-# test output & cache
+# Test output & cache
 Testing/
 .cache/
+
+# Certificate and authentication files
+*.pem
+*.key
+config/users.conf
