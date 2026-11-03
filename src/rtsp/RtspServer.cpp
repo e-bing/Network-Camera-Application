@@ -11,6 +11,11 @@ static const char *PIPELINE =
     "v4l2h264enc ! video/x-h264,level=(string)4,profile=(string)baseline ! "
     "h264parse ! rtph264pay name=pay0 pt=96 config-interval=-1";
 
+static GstRTSPFilterResult remove_all_clients(GstRTSPServer *, GstRTSPClient *, gpointer)
+{
+    return GST_RTSP_FILTER_REMOVE;
+}
+
 static void on_unprepared(GstRTSPMedia *media, gpointer user_data)
 {
     auto *ctrl = static_cast<EptzController *>(user_data);
@@ -67,6 +72,9 @@ RtspServer::~RtspServer()
 {
     if (source_id_ != 0)
         g_source_remove(source_id_);
+
+    gst_rtsp_server_client_filter(server_, remove_all_clients, nullptr);
+
     g_object_unref(server_);
 }
 
