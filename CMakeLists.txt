@@ -49,6 +49,7 @@ add_executable(network-camera
     src/pipeline/EptzController.cpp
     src/rtsp/RtspServer.cpp
     src/http/HttpServer.cpp
+    src/http/AuthManager.cpp
     )
 target_include_directories(network-camera PRIVATE src)
 target_link_libraries(network-camera PRIVATE

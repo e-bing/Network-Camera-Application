@@ -1,5 +1,7 @@
 #pragma once
 
+#include "AuthManager.hpp"
+
 #include <memory>
 #include <string>
 #include <thread>
@@ -19,6 +21,7 @@ public:
     HttpServer(IEptzController &eptz,
                const std::string &cert_file,
                const std::string &key_file,
+               const std::string &users_file,
                int port = 8443);
 
     ~HttpServer();
@@ -36,4 +39,7 @@ private:
 
     int port_;
     std::thread thread_;
+
+    AuthManager auth_manager_;
+    bool auth_loaded_ = false;
 };
