@@ -8,6 +8,24 @@
 
 using json = nlohmann::json;
 
+static json to_json(const PtzState &state)
+{
+    return {
+        {"pan", state.pan},
+        {"tilt", state.tilt},
+        {"zoom", state.zoom}};
+}
+
+static void set_json_error(httplib::Response &res,
+                           int status,
+                           const char *error)
+{
+    res.status = status;
+    res.set_content(
+        json{{"error", error}}.dump(),
+        "application/json");
+}
+
 HttpServer::HttpServer(IEptzController &eptz,
                        const std::string &cert_file,
                        const std::string &key_file,
@@ -22,13 +40,45 @@ HttpServer::HttpServer(IEptzController &eptz,
                         httplib::Response &res)
                  {
                      const PtzState state = eptz_.getPtz();
+                     res.set_content(to_json(state).dump(), "application/json");
+                 });
 
-                     json body = {
-                         {"pan", state.pan},
-                         {"tilt", state.tilt},
-                         {"zoom", state.zoom}};
+    server_->Put("/api/v1/ptz",
+                 [this](const httplib::Request &req,
+                        httplib::Response &res)
+                 {
+                     const json body = json::parse(req.body, nullptr, false);
 
-                     res.set_content(body.dump(), "application/json");
+                     if (body.is_discarded())
+                     {
+                         set_json_error(res, 400, "invalid_json");
+                         return;
+                     }
+
+                     if (!body.is_object() ||
+                         !body.contains("pan") || !body.at("pan").is_number() ||
+                         !body.contains("tilt") || !body.at("tilt").is_number() ||
+                         !body.contains("zoom") || !body.at("zoom").is_number())
+                     {
+                         set_json_error(res, 400, "invalid_ptz_parameters");
+                         return;
+                     }
+
+                     PtzState state{
+                         body.at("pan").get<double>(),
+                         body.at("tilt").get<double>(),
+                         body.at("zoom").get<double>()};
+
+                     if (eptz_.setPtz(state) != PtzResult::Ok)
+                     {
+                         set_json_error(res, 400, "invalid_ptz_value");
+                         return;
+                     }
+
+                     res.status = 200;
+                     res.set_content(
+                         to_json(state).dump(),
+                         "application/json");
                  });
 }
 
