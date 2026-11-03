@@ -26,7 +26,7 @@ public:
     HttpServer(const HttpServer &) = delete;
     HttpServer &operator=(const HttpServer &) = delete;
 
-    bool start(); // bind synchronously, then start listening thread
+    bool start(); // bind synchronously, then start listening thread (call once only)
     void stop();  // stop server and join thread
 
 private:
