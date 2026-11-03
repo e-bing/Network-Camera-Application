@@ -1,5 +1,6 @@
 #include "pipeline/EptzController.hpp"
 #include "rtsp/RtspServer.hpp"
+#include "http/HttpServer.hpp"
 
 #include <gst/gst.h>
 #include <cstdio>
@@ -75,6 +76,13 @@ int main(int argc, char *argv[])
     if (!rtsp.start())
     {
         std::fprintf(stderr, "Failed to start RTSP server\n");
+        return 1;
+    }
+
+    HttpServer http(eptz, "config/server.pem", "config/server.key", 8443);
+    if (!http.start())
+    {
+        std::fprintf(stderr, "Failed to start HTTPS server\n");
         return 1;
     }
 

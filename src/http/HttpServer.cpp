@@ -9,12 +9,12 @@
 using json = nlohmann::json;
 
 HttpServer::HttpServer(IEptzController &eptz,
-                       const std::string *cert_file,
-                       const std::string *key_file,
+                       const std::string &cert_file,
+                       const std::string &key_file,
                        int port)
     : eptz_(eptz),
       server_(std::make_unique<httplib::SSLServer>(
-          cert_file, key_file)),
+          cert_file.c_str(), key_file.c_str())),
       port_(port)
 {
     server_->Get("/api/v1/ptz",
